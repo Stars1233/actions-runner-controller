@@ -244,6 +244,9 @@ func (b *ResourceBuilder) newScaleSetListenerPod(autoscalingListener *v1alpha1.A
 	terminationGracePeriodSeconds := int64(60)
 	podSpec := corev1.PodSpec{
 		ServiceAccountName: serviceAccount.Name,
+		NodeSelector: map[string]string{
+			LabelKeyKubernetesOS: "linux",
+		},
 		Containers: []corev1.Container{
 			{
 				Name:  autoscalingListenerContainerName,
@@ -353,13 +356,16 @@ func mergeListenerPodWithTemplate(pod *corev1.Pod, tmpl *corev1.PodTemplateSpec)
 		pod.Spec.ImagePullSecrets = tmpl.Spec.ImagePullSecrets
 	}
 
+	if tmpl.Spec.NodeSelector != nil {
+		pod.Spec.NodeSelector = tmpl.Spec.NodeSelector
+	}
+
 	pod.Spec.Volumes = append(pod.Spec.Volumes, tmpl.Spec.Volumes...)
 	pod.Spec.InitContainers = tmpl.Spec.InitContainers
 	pod.Spec.EphemeralContainers = tmpl.Spec.EphemeralContainers
 	pod.Spec.TerminationGracePeriodSeconds = tmpl.Spec.TerminationGracePeriodSeconds
 	pod.Spec.ActiveDeadlineSeconds = tmpl.Spec.ActiveDeadlineSeconds
 	pod.Spec.DNSPolicy = tmpl.Spec.DNSPolicy
-	pod.Spec.NodeSelector = tmpl.Spec.NodeSelector
 	pod.Spec.NodeName = tmpl.Spec.NodeName
 	pod.Spec.HostNetwork = tmpl.Spec.HostNetwork
 	pod.Spec.HostPID = tmpl.Spec.HostPID
